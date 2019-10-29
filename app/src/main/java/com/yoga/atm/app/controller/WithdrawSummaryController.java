@@ -5,6 +5,7 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -25,7 +26,8 @@ public class WithdrawSummaryController {
 		try {
 			view.setViewName("withdraw/summary");
 		} catch (Exception e) {
-			request.getSession().invalidate();
+			e.printStackTrace();
+			SecurityContextHolder.getContext().setAuthentication(null);
 			view = new ModelAndView("redirect:/");
 			redirectAttributes.addFlashAttribute("message", env.getProperty("app.unknown.error"));
 		}

@@ -1,18 +1,17 @@
 <!DOCTYPE html>
-<%@include file="../taglibs.jsp"%>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="utf-8">
 <title>ATM System: Transfer Funds</title>
 <!-- Loading Bootstrap -->
-<link href="css/bootstrap.min.css" rel="stylesheet">
+<link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
 
 <!-- Loading Flat UI -->
-<link href="css/flat-ui.css" rel="stylesheet">
-<link href="css/demo.css" rel="stylesheet">
-<link href="css/custom.css" rel="stylesheet">
+<link th:href="@{/css/flat-ui.css}" rel="stylesheet">
+<link th:href="@{/css/demo.css}" rel="stylesheet">
+<link th:href="@{/css/custom.css}" rel="stylesheet">
 
-<link rel="shortcut icon" href="img/favicon.ico">
+<link rel="shortcut icon" th:href="@{/img/favicon.ico}">
 
 <!-- HTML5 shim, for IE6-8 support of HTML5 elements. All other JS at the end of file. -->
 <!--[if lt IE 9]>
@@ -33,21 +32,20 @@
 				<!-- Place <h1></h1> below -->
 				<h1 class="demo-section-title text-uppercase text-center">Transfer
 					Funds</h1>
-
 				<div class="row">
-
 					<!-- 3/4 -->
 					<!-- Balance -->
 					<div class="col-xs-9">
-						<form class="form-horizontal" method="POST"
-							action="${pageContext.request.contextPath}/transfer">
-							<input name="destination" type="hidden" value="${ destination }">
-							<input name="amount" type="hidden" value="${ amount }"> <input
-								name="reference" type="hidden" value="${ reference }">
+						<form class="form-horizontal" method="POST" action="/transfer">
+							<input name="destination" type="hidden"
+								th:value="${ destination }"> <input name="amount"
+								type="hidden" th:value="${ amount }"> <input
+								name="reference" type="hidden" th:value="${ reference }">
 							<div class="col-xs-12">
 								<div class="tile">
 									<h4 class="text-uppercase balance">
-										<span>Reference</span>${ reference }
+										<span>Reference</span><span style="color: black;"
+											th:text="${reference}"></span>
 									</h4>
 								</div>
 							</div>
@@ -56,7 +54,9 @@
 								<div class="tile">
 									<h5>From:</h5>
 									<button type="button" class="btn btn-block btn-lg btn-inverse">
-										<h6>${ accountNumber }</h6>
+										<h6>
+											<span style="color: black;" th:text="${accountNumber}"></span>
+										</h6>
 									</button>
 								</div>
 							</div>
@@ -65,7 +65,9 @@
 								<div class="tile">
 									<h5>To:</h5>
 									<button type="button" class="btn btn-block btn-lg btn-inverse">
-										<h6>${ destination }</h6>
+										<h6>
+											<span style="color: black;" th:text="${ destination }"></span>
+										</h6>
 									</button>
 								</div>
 							</div>
@@ -73,7 +75,8 @@
 							<div class="col-xs-12">
 								<div class="tile">
 									<h4 class="text-uppercase balance">
-										<span>Amount</span>$${ amount }
+										<span>Amount</span>$<span style="color: black;"
+											th:text="${ amount }"></span>
 									</h4>
 								</div>
 							</div>
@@ -89,14 +92,12 @@
 					<!-- 1/4 -->
 					<div class="col-xs-3">
 						<div class="tile">
-							<a id="back"
-								href="${pageContext.request.contextPath}/transaction"
+							<a id="back" href="/transaction"
 								class="btn btn-lg btn-inverse text-uppercase btn-padding"><span
 								class="fui-arrow-left"></span> Back</a>
 						</div>
 						<div class="tile">
-							<a id="cancelTransactin"
-								href="${pageContext.request.contextPath}/logout"
+							<a id="cancelTransactin" href="/logout"
 								class="btn btn-lg btn-danger text-uppercase btn-padding"><span
 								class="fui-cross"></span> Exit</a>
 						</div>
@@ -109,12 +110,15 @@
 		<!-- // END row-->
 	</div>
 	<!-- /container -->
-	<script src="js/jquery.min.js"></script>
-	<script src="js/video.js"></script>
-	<script src="js/flat-ui.min.js"></script>
-	<script src="js/application.js"></script>
+	<script type="text/javascript" th:src="@{/js/jquery.min.js}"></script>
+	<script type="text/javascript" th:src="@{/js/flat-ui.min.js}"></script>
+	<script type="text/javascript" th:src="@{/js/video.js}"></script>
+	<script type="text/javascript" th:src="@{/js/application.js}"></script>
 	<script>
-		videojs.options.flash.swf = "js/video-js.swf"
+		videojs.options.flash.swf = "js/video-js.swf";
+		$(document).ready(function() {
+
+		});
 	</script>
 </body>
 </html>

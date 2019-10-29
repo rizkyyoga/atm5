@@ -3,6 +3,7 @@ package com.yoga.atm.app.controller;
 import java.text.DateFormat;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
+import java.util.ArrayList;
 import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
@@ -10,6 +11,8 @@ import javax.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -17,11 +20,8 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.yoga.atm.app.dao.AccountRepository;
-import com.yoga.atm.app.dao.TransactionRepository;
-import com.yoga.atm.app.enumerable.TransactionType;
 import com.yoga.atm.app.model.Account;
-import com.yoga.atm.app.model.Transaction;
+import com.yoga.atm.app.service.TransactionService;
 
 @Controller
 @PropertySource("classpath:message.properties")
@@ -32,20 +32,18 @@ public class WithdrawController {
 	private Environment env;
 
 	@Autowired
-	private AccountRepository accountService;
-
-	@Autowired
-	private TransactionRepository transactionService;
+	private TransactionService transactionService;
 
 	@RequestMapping(value = "/withdraw", method = RequestMethod.GET)
 	public ModelAndView withdraw(HttpServletRequest request, RedirectAttributes redirectAttributes) {
 		ModelAndView view = new ModelAndView();
 		try {
-			Account account = (Account) request.getSession().getAttribute("account");
+			Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 			view.addObject("accountNumber", account.getAccountNumber());
 			view.setViewName("withdraw/index");
 		} catch (Exception e) {
-			request.getSession().invalidate();
+			e.printStackTrace();
+			SecurityContextHolder.getContext().setAuthentication(null);
 			view = new ModelAndView("redirect:/");
 			redirectAttributes.addFlashAttribute("message", env.getProperty("app.unknown.error"));
 		}
@@ -57,7 +55,7 @@ public class WithdrawController {
 			@RequestParam(value = "amount", required = true) String amount) {
 		ModelAndView view = new ModelAndView();
 		try {
-			Account account = (Account) request.getSession().getAttribute("account");
+			Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 			String message = "";
 			boolean goToSummary = true;
 			if (!amount.matches("[0-9]+")) {
@@ -79,12 +77,11 @@ public class WithdrawController {
 			}
 
 			if (goToSummary) {
-				account.setBalance(account.getBalance() - Double.valueOf(amount));
-				account = accountService.save(account);
-				request.getSession().setAttribute("account", account);
-				Transaction transaction = new Transaction(TransactionType.WITHDRAW, account, Double.valueOf(amount),
-						new Date(), null, null);
-				transactionService.save(transaction);
+				account = transactionService.withdraw(account.getAccountNumber(), Double.valueOf(amount));
+				if (account == null)
+					throw new Exception();
+				SecurityContextHolder.getContext()
+						.setAuthentication(new UsernamePasswordAuthenticationToken(account, null, new ArrayList<>()));
 				view = new ModelAndView("redirect:/withdrawSummary");
 				DecimalFormat formatter = new DecimalFormat("#,###.00");
 				redirectAttributes.addFlashAttribute("balance", formatter.format(account.getBalance()));
@@ -97,7 +94,8 @@ public class WithdrawController {
 				redirectAttributes.addFlashAttribute("message", message);
 			}
 		} catch (Exception e) {
-			request.getSession().invalidate();
+			e.printStackTrace();
+			SecurityContextHolder.getContext().setAuthentication(null);
 			view = new ModelAndView("redirect:/");
 			redirectAttributes.addFlashAttribute("message", env.getProperty("app.unknown.error"));
 		}

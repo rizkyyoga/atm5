@@ -1,18 +1,17 @@
 <!DOCTYPE html>
-<%@include file="../taglibs.jsp"%>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="utf-8">
 <title>ATM System Login: Input Pin</title>
 <!-- Loading Bootstrap -->
-<link href="css/bootstrap.min.css" rel="stylesheet">
+<link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
 
 <!-- Loading Flat UI -->
-<link href="css/flat-ui.css" rel="stylesheet">
-<link href="css/demo.css" rel="stylesheet">
-<link href="css/custom.css" rel="stylesheet">
+<link th:href="@{/css/flat-ui.css}" rel="stylesheet">
+<link th:href="@{/css/demo.css}" rel="stylesheet">
+<link th:href="@{/css/custom.css}" rel="stylesheet">
 
-<link rel="shortcut icon" href="img/favicon.ico">
+<link rel="shortcut icon" th:href="@{/img/favicon.ico}">
 <style>
 #confirmPin {
 	display: block;
@@ -51,22 +50,23 @@
 						<h1 class="demo-section-title text-uppercase text-center">Input
 							Destination Account Number</h1>
 						<input type="text" id="userPinInput" class="form-control"
-							maxlength="6" style="text-align: center;" required="true" />
+							maxlength="6" style="text-align: center;" required />
 						<div id="confirmPin">
 							<a href="#"
 								class="btn btn-block btn-lg btn-success text-uppercase">Confirm</a>
 						</div>
 						<div id="cancelTransaction">
-							<a href="${pageContext.request.contextPath}/transaction"
+							<a href="/transaction"
 								class="btn btn-block btn-lg btn-danger text-uppercase"><span
 								class="fui-cross"></span> Cancel</a>
 						</div>
-						<span style="color: red;">${ message }</span>
+						<span style="color: red;" th:utext="${message}"></span>
 						<!-- // Pin Pad -->
 					</div>
 					<div class="col-xs-4">
 						<div style="margin-top: 8rem;">
-							<img src="img/CardInsertedGreenLight.png" style="width: 16em;" />
+							<img th:src="@{/img/CardInsertedGreenLight.png}"
+								style="width: 16em;" />
 						</div>
 					</div>
 					<!-- /.col-xs-4 -->
@@ -77,25 +77,22 @@
 		<!-- // END row-->
 	</div>
 	<!-- /container -->
-	<script src="js/jquery.min.js"></script>
-	<script src="js/video.js"></script>
-	<script src="js/flat-ui.min.js"></script>
-	<script src="js/application.js"></script>
+	<!-- /container -->
+	<script type="text/javascript" th:src="@{/js/jquery.min.js}"></script>
+	<script type="text/javascript" th:src="@{/js/flat-ui.min.js}"></script>
+	<script type="text/javascript" th:src="@{/js/video.js}"></script>
+	<script type="text/javascript" th:src="@{/js/application.js}"></script>
 	<script>
 		videojs.options.flash.swf = "js/video-js.swf";
-		$(document)
-				.ready(
-						function() {
-							$("#confirmPin")
-									.click(
-											function() {
-												window.location
-														.replace("${pageContext.request.contextPath}/transferAmount?destination="
-																+ $(
-																		"#userPinInput")
-																		.val());
-											});
-						});
+		$(document).ready(
+				function() {
+					$("#confirmPin").click(
+							function() {
+								window.location
+										.replace("/transferAmount?destination="
+												+ $("#userPinInput").val());
+							});
+				});
 	</script>
 </body>
 </html>

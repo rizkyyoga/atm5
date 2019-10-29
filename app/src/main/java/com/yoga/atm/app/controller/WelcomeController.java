@@ -12,10 +12,12 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.PropertySource;
 import org.springframework.core.env.Environment;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
@@ -38,10 +40,17 @@ public class WelcomeController {
 	@Autowired
 	private AccountRepository accountService;
 
-	@RequestMapping(value = "", method = RequestMethod.GET)
-	public ModelAndView inputAccountNumber(HttpServletRequest request, RedirectAttributes redirectAttributes) {
+	@RequestMapping(value = { "/", "/login" }, method = RequestMethod.GET)
+	public ModelAndView inputAccountNumber(HttpServletRequest request, HttpSession session,
+			RedirectAttributes redirectAttributes) {
 		ModelAndView view = new ModelAndView();
 		try {
+			if (!"anonymousUser".equals(SecurityContextHolder.getContext().getAuthentication().getPrincipal()))
+				return new ModelAndView("redirect:/transaction");
+			if (request.getSession().getAttribute("message") != null) {
+				view.addObject("message", session.getAttribute("message"));
+				session.removeAttribute("message");
+			}
 			view.setViewName("welcome/inputAccountNumber");
 		} catch (Exception e) {
 			view = new ModelAndView("redirect:/");
@@ -79,6 +88,8 @@ public class WelcomeController {
 			@RequestParam(value = "an", required = true) String accountNumber) {
 		ModelAndView view = new ModelAndView();
 		try {
+			if (!"anonymousUser".equals(SecurityContextHolder.getContext().getAuthentication().getPrincipal()))
+				return new ModelAndView("redirect:/transaction");
 			boolean stoper = false;
 			String message = "";
 			if (accountNumber.length() != 6) {
@@ -103,46 +114,8 @@ public class WelcomeController {
 		return view;
 	}
 
-	@RequestMapping(value = "/login", method = RequestMethod.POST)
-	public ModelAndView login(HttpServletRequest request, RedirectAttributes redirectAttributes,
-			@RequestParam(value = "accountNumber", required = true) String accountNumber,
-			@RequestParam(value = "pin", required = true) String pin) {
-		ModelAndView view = new ModelAndView();
-		try {
-			boolean stoper = false;
-			String message = "";
-			if (pin.length() != 6) {
-				message += env.getProperty("app.pin.size");
-				stoper = true;
-			}
-			if (!pin.matches("[0-9]+")) {
-				message += env.getProperty("app.pin.number");
-				stoper = true;
-			}
-			if (stoper) {
-				view = new ModelAndView("redirect:/pin?an=" + accountNumber);
-				redirectAttributes.addFlashAttribute("message", message);
-				return view;
-			}
-			List<Account> listAccount = accountService.findByAccountNumberAndPin(accountNumber, pin);
-			if (listAccount.size() <= 0) {
-				message += env.getProperty("app.login.invalid");
-				view = new ModelAndView("redirect:/");
-				redirectAttributes.addFlashAttribute("message", message);
-			} else {
-				Account account = listAccount.get(0);
-				request.getSession().setAttribute("account", account);
-				view = new ModelAndView("redirect:/transaction");
-			}
-		} catch (Exception e) {
-			view = new ModelAndView("redirect:/");
-			redirectAttributes.addFlashAttribute("message", env.getProperty("app.unknown.error"));
-		}
-		return view;
-	}
-
 	private Function<String, Account> mapToItem = (line) -> {
-		String[] p = line.split(",");// a CSV has comma separated lines
+		String[] p = line.split(";");
 		Account item = new Account();
 		item.setName(p[0]);
 		item.setPin(p[1]);

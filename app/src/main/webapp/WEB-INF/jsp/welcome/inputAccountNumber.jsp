@@ -1,18 +1,17 @@
 <!DOCTYPE html>
-<%@include file="../taglibs.jsp"%>
-<html lang="en">
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
 <head>
 <meta charset="utf-8">
 <title>ATM System Login: Input Pin</title>
 <!-- Loading Bootstrap -->
-<link href="css/bootstrap.min.css" rel="stylesheet">
+<link th:href="@{/css/bootstrap.min.css}" rel="stylesheet">
 
 <!-- Loading Flat UI -->
-<link href="css/flat-ui.css" rel="stylesheet">
-<link href="css/demo.css" rel="stylesheet">
-<link href="css/custom.css" rel="stylesheet">
+<link th:href="@{/css/flat-ui.css}" rel="stylesheet">
+<link th:href="@{/css/demo.css}" rel="stylesheet">
+<link th:href="@{/css/custom.css}" rel="stylesheet">
 
-<link rel="shortcut icon" href="img/favicon.ico">
+<link rel="shortcut icon" th:href="@{/img/favicon.ico}">
 <style>
 #confirmPin {
 	display: block;
@@ -60,8 +59,7 @@
 							style="display: block; padding-top: 150px; padding-bottom: 25px">
 							<span class="text-uppercase text-center"><b>Upload CSV
 									file to upload data account</b></span>
-							<form class="form-horizontal" method="POST"
-								action="${pageContext.request.contextPath}/upload"
+							<form class="form-horizontal" method="POST" action="/upload"
 								enctype="multipart/form-data">
 								<input id="singleFileUploadInput" type="file" name="file"
 									class="form-control-file" accept=".csv"
@@ -70,13 +68,14 @@
 									class="btn btn-block btn-lg btn-info text-uppercase">Submit</button>
 							</form>
 						</div>
-						<span style="color: red;">${ message }</span> <span
-							style="color: green;">${ notif }</span>
+						<span style="color: red;" th:utext="${message}"></span> <span
+							style="color: green;" th:utext="${notif}"></span>
 						<!-- // Pin Pad -->
 					</div>
 					<div class="col-xs-4">
 						<div style="margin-top: 8rem;">
-							<img src="img/CardInsertedGreenLight.png" style="width: 16em;" />
+							<img th:src="@{/img/CardInsertedGreenLight.png}"
+								style="width: 16em;" />
 						</div>
 					</div>
 					<!-- /.col-xs-4 -->
@@ -87,25 +86,17 @@
 		<!-- // END row-->
 	</div>
 	<!-- /container -->
-	<script src="js/jquery.min.js"></script>
-	<script src="js/video.js"></script>
-	<script src="js/flat-ui.min.js"></script>
-	<script src="js/application.js"></script>
+	<script type="text/javascript" th:src="@{/js/jquery.min.js}"></script>
+	<script type="text/javascript" th:src="@{/js/flat-ui.min.js}"></script>
+	<script type="text/javascript" th:src="@{/js/video.js}"></script>
+	<script type="text/javascript" th:src="@{/js/application.js}"></script>
 	<script>
 		videojs.options.flash.swf = "js/video-js.swf";
-		$(document)
-				.ready(
-						function() {
-							$("#confirmPin")
-									.click(
-											function() {
-												window.location
-														.replace("${pageContext.request.contextPath}/pin?an="
-																+ $(
-																		"#userPinInput")
-																		.val());
-											});
-						});
+		$(document).ready(function() {
+			$("#confirmPin").click(function() {
+				window.location.replace("/pin?an=" + $("#userPinInput").val());
+			});
+		});
 	</script>
 </body>
 </html>
