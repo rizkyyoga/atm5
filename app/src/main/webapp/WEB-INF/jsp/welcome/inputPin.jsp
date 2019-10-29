@@ -51,7 +51,7 @@
 						style="border-right: solid 3px #CCC">
 						<h1 class="demo-section-title text-uppercase text-center">Input
 							Your PIN</h1>
-						<form class="form-horizontal" method="POST" action="/login">
+						<form class="form-horizontal" method="POST" th:action="@{/login}">
 							<input name="accountNumber" type="hidden"
 								th:value="${ accountNumber }"> <input type="password"
 								id="userPinInput" name="pin" class="form-control" maxlength="6"

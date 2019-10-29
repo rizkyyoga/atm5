@@ -48,7 +48,7 @@
 						</div>
 						<!-- Options -->
 						<div class="col-xs-4">
-							<a href="/withdraw">
+							<a th:href="@{/withdraw}">
 								<div class="tile">
 									<img th:src="@{/img/quick_cash.png}" alt="Withdraw Funds"
 										class="tile-image">
@@ -58,7 +58,7 @@
 							</a>
 						</div>
 						<div class="col-xs-4">
-							<a href="/transferDestination">
+							<a th:href="@{/transferDestination}">
 								<div class="tile">
 									<img th:src="@{/img/transfer_money.png}"
 										alt="Transfer Funds to Another Account" class="tile-image">
@@ -68,7 +68,7 @@
 							</a>
 						</div>
 						<div class="col-xs-4">
-							<a href="/viewTransaction">
+							<a th:href="@{/viewTransaction}">
 								<div class="tile">
 									<img th:src="@{/img/deposit_vault.png}"
 										th:attr="alt='View Transaction'"
@@ -84,7 +84,7 @@
 					<!-- 1/4 -->
 					<div class="col-xs-3">
 						<div class="tile">
-							<a id="cancelTransactin" href="/logout"
+							<a id="cancelTransactin" th:href="@{/logout}"
 								class="btn btn-lg btn-danger text-uppercase btn-padding"><span
 								class="fui-cross"></span> Exit</a>
 						</div>

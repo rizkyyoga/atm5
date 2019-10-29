@@ -73,12 +73,12 @@
 					<!-- 1/4 -->
 					<div class="col-xs-3">
 						<div class="tile">
-							<a id="back" href="/transaction"
+							<a id="back" th:href="@{/transaction}"
 								class="btn btn-lg btn-inverse text-uppercase btn-padding"><span
 								class="fui-arrow-left"></span> Back</a>
 						</div>
 						<div class="tile">
-							<a id="cancelTransactin" href="/logout"
+							<a id="cancelTransactin" th:href="@{/logout}"
 								class="btn btn-lg btn-danger text-uppercase btn-padding"><span
 								class="fui-cross"></span> Exit</a>
 						</div>

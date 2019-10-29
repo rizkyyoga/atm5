@@ -56,7 +56,7 @@
 								class="btn btn-block btn-lg btn-success text-uppercase">Confirm</a>
 						</div>
 						<div id="cancelTransaction">
-							<a href="/transaction"
+							<a th:href="@{/transaction}"
 								class="btn btn-block btn-lg btn-danger text-uppercase"><span
 								class="fui-cross"></span> Cancel</a>
 						</div>
@@ -82,14 +82,17 @@
 	<script type="text/javascript" th:src="@{/js/flat-ui.min.js}"></script>
 	<script type="text/javascript" th:src="@{/js/video.js}"></script>
 	<script type="text/javascript" th:src="@{/js/application.js}"></script>
-	<script>
+	<script th:inline="javascript">
+		/*<![CDATA[*/
+		    var context = [[@{/}]];
+		/*]]>*/
 		videojs.options.flash.swf = "js/video-js.swf";
 		$(document).ready(
 				function() {
 					$("#confirmPin").click(
 							function() {
 								window.location
-										.replace("/transferAmount?destination="
+										.replace(context+"transferAmount?destination="
 												+ $("#userPinInput").val());
 							});
 				});

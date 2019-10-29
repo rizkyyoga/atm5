@@ -59,8 +59,8 @@
 							style="display: block; padding-top: 150px; padding-bottom: 25px">
 							<span class="text-uppercase text-center"><b>Upload CSV
 									file to upload data account</b></span>
-							<form class="form-horizontal" method="POST" action="/upload"
-								enctype="multipart/form-data">
+							<form class="form-horizontal" method="POST"
+								th:action="@{/upload}" enctype="multipart/form-data">
 								<input id="singleFileUploadInput" type="file" name="file"
 									class="form-control-file" accept=".csv"
 									style="padding: 20px 0px" />
@@ -90,11 +90,14 @@
 	<script type="text/javascript" th:src="@{/js/flat-ui.min.js}"></script>
 	<script type="text/javascript" th:src="@{/js/video.js}"></script>
 	<script type="text/javascript" th:src="@{/js/application.js}"></script>
-	<script>
+	<script th:inline="javascript">
+		/*<![CDATA[*/
+		    var context = [[@{/}]];
+		/*]]>*/
 		videojs.options.flash.swf = "js/video-js.swf";
 		$(document).ready(function() {
 			$("#confirmPin").click(function() {
-				window.location.replace("/pin?an=" + $("#userPinInput").val());
+				window.location.replace(context+"pin?an=" + $("#userPinInput").val());
 			});
 		});
 	</script>
