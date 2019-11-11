@@ -36,51 +36,55 @@
 				<div class="row">
 					<!-- 3/4 -->
 					<div class="col-xs-9">
-						<div class="row">
-							<div class="col-xs-4">
-								<div class="tile">
-									<a id="qc10" th:href="@{/withdrawl?amount=10}"
-										class="btn btn-lg btn-primary text-uppercase btn-padding">&#36;
-										10.00</a>
+						<form class="form-horizontal" method="POST" id="withdrawForm"
+							th:action="@{/withdrawl}">
+							<input name="amount" id="amount" type="hidden" />
+							<div class="row">
+								<div class="col-xs-4">
+									<div class="tile">
+										<a id="qc10"
+											class="btn btn-lg btn-primary text-uppercase btn-padding">&#36;
+											10.00</a>
+									</div>
+								</div>
+								<div class="col-xs-4">
+									<div class="tile">
+										<a id="qc50"
+											class="btn btn-lg btn-primary text-uppercase btn-padding">&#36;
+											50.00</a>
+									</div>
+								</div>
+								<div class="col-xs-4">
+									<div class="tile">
+										<a id="qc100"
+											class="btn btn-lg btn-primary text-uppercase btn-padding">&#36;
+											100.00</a>
+									</div>
 								</div>
 							</div>
-							<div class="col-xs-4">
-								<div class="tile">
-									<a id="qc50" th:href="@{/withdrawl?amount=50}"
-										class="btn btn-lg btn-primary text-uppercase btn-padding">&#36;
-										50.00</a>
+							<div class="row">
+								<div class="col-xs-12">
+									<h6>Click a button to get that amount of cash.</h6>
+									<h5>or input a multiple of $10. Must be lower than $1000</h5>
+									<input type="text" id="qcCustomNumber" class="form-control"
+										placeholder="50.00" />
+									<!-- Number Keys -->
+									<!-- TABLE -->
+									<div id="pinPad">
+										<table>
+											<tr>
+												<td colspan="5"><a id="btnConfirm" href="#"
+													class="btn btn-block btn-lg btn-primary text-uppercase">Confirm</a></td>
+												<td colspan="2"><a id="btnDelete" href="#"
+													class="btn btn-block btn-lg btn-default text-uppercase">Clear</a></td>
+											</tr>
+										</table>
+										<span style="color: red;" th:utext="${message}"></span>
+									</div>
+									<!-- // Pin Pad -->
 								</div>
 							</div>
-							<div class="col-xs-4">
-								<div class="tile">
-									<a id="qc100" th:href="@{/withdrawl?amount=100}"
-										class="btn btn-lg btn-primary text-uppercase btn-padding">&#36;
-										100.00</a>
-								</div>
-							</div>
-						</div>
-						<div class="row">
-							<div class="col-xs-12">
-								<h6>Click a button to get that amount of cash.</h6>
-								<h5>or input a multiple of $10. Must be lower than $1000</h5>
-								<input type="text" id="qcCustomNumber" class="form-control"
-									placeholder="50.00" />
-								<!-- Number Keys -->
-								<!-- TABLE -->
-								<div id="pinPad">
-									<table>
-										<tr>
-											<td colspan="5"><a id="btnConfirm" href="#"
-												class="btn btn-block btn-lg btn-primary text-uppercase">Confirm</a></td>
-											<td colspan="2"><a id="btnDelete" href="#"
-												class="btn btn-block btn-lg btn-default text-uppercase">Clear</a></td>
-										</tr>
-									</table>
-									<span style="color: red;" th:utext="${message}"></span>
-								</div>
-								<!-- // Pin Pad -->
-							</div>
-						</div>
+						</form>
 					</div>
 					<!-- 1/4 -->
 					<div class="col-xs-3">
@@ -107,22 +111,29 @@
 	<script type="text/javascript" th:src="@{/js/flat-ui.min.js}"></script>
 	<script type="text/javascript" th:src="@{/js/video.js}"></script>
 	<script type="text/javascript" th:src="@{/js/application.js}"></script>
-	<script th:inline="javascript">
-		/*<![CDATA[*/
-		    var context = [[@{/}]];
-		/*]]>*/
+	<script>
 		videojs.options.flash.swf = "js/video-js.swf"
-		$(document).ready(
-				function() {
-					$("#btnConfirm").click(
-							function() {
-								window.location.replace(context+"withdrawl?amount="
-										+ $("#qcCustomNumber").val());
-							});
-					$("#btnDelete").click(function() {
-						$("#qcCustomNumber").val('')
-					});
-				});
+		$(document).ready(function() {
+			$("#qc10").click(function() {
+				$('#amount').val('10');
+				$('#withdrawForm').submit();
+			});
+			$("#qc50").click(function() {
+				$('#amount').val('50');
+				$('#withdrawForm').submit();
+			});
+			$("#qc100").click(function() {
+				$('#amount').val('100');
+				$('#withdrawForm').submit();
+			});
+			$("#btnConfirm").click(function() {
+				$('#amount').val($('#qcCustomNumber').val());
+				$('#withdrawForm').submit();
+			});
+			$("#btnDelete").click(function() {
+				$("#qcCustomNumber").val('')
+			});
+		});
 	</script>
 </body>
 </html>

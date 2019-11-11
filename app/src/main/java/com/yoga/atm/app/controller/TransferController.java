@@ -3,7 +3,6 @@ package com.yoga.atm.app.controller;
 import java.security.SecureRandom;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
-import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -19,8 +18,9 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.yoga.atm.app.dao.AccountRepository;
+import com.yoga.atm.app.Exception.WrongInputException;
 import com.yoga.atm.app.model.Account;
+import com.yoga.atm.app.service.AccountService;
 import com.yoga.atm.app.service.TransactionService;
 
 @Controller
@@ -32,7 +32,7 @@ public class TransferController {
 	private Environment env;
 
 	@Autowired
-	private AccountRepository accountService;
+	private AccountService accountService;
 
 	@Autowired
 	private TransactionService transactionService;
@@ -56,25 +56,20 @@ public class TransferController {
 		ModelAndView view = new ModelAndView();
 		try {
 			String message = "";
-			boolean stoper = false;
 			if (!destination.matches("[0-9]+")) {
 				message += env.getProperty("app.invalid.account");
-				stoper = true;
+				throw new WrongInputException(message);
 			}
-
-			List<Account> listAccount = accountService.findByAccountNumber(destination);
-			if (listAccount.size() <= 0) {
+			Account listAccount = accountService.findByAccountNumber(destination);
+			if (listAccount == null) {
 				message += env.getProperty("app.invalid.account");
-				stoper = true;
+				throw new WrongInputException(message);
 			}
-
-			if (stoper) {
-				view = new ModelAndView("redirect:/transferDestination");
-				redirectAttributes.addFlashAttribute("message", message);
-			} else {
-				view.addObject("destination", destination);
-				view.setViewName("transfer/amount");
-			}
+			view.addObject("destination", destination);
+			view.setViewName("transfer/amount");
+		} catch (WrongInputException e) {
+			view = new ModelAndView("redirect:/transferDestination");
+			redirectAttributes.addFlashAttribute("message", e.getMessage());
 		} catch (Exception e) {
 			SecurityContextHolder.getContext().setAuthentication(null);
 			view = new ModelAndView("redirect:/");
@@ -91,36 +86,32 @@ public class TransferController {
 		try {
 			Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 			String message = "";
-			boolean stoper = false;
 			if (!amount.matches("[0-9]+")) {
 				message += env.getProperty("app.amount.number");
-				stoper = true;
+				throw new WrongInputException(message);
 			} else {
 				if (Long.valueOf(amount) < 1) {
 					message += env.getProperty("app.amount.mintransfer");
-					stoper = true;
+					throw new WrongInputException(message);
 				}
 				if (Long.valueOf(amount) > 1000) {
 					message += env.getProperty("app.amount.maxtransfer");
-					stoper = true;
+					throw new WrongInputException(message);
 				}
 				if (Long.valueOf(amount) > account.getBalance()) {
 					message += env.getProperty("app.amount.insufficient") + account.getBalance() + "<br>";
-					stoper = true;
+					throw new WrongInputException(message);
 				}
 			}
-
-			if (stoper) {
-				view = new ModelAndView("redirect:/transferAmount");
-				redirectAttributes.addFlashAttribute("message", message);
-			} else {
-				view.addObject("accountNumber", account.getAccountNumber());
-				view.addObject("destination", destination);
-				DecimalFormat formatter = new DecimalFormat("#,###.00");
-				view.addObject("amount", formatter.format(Double.valueOf(amount)));
-				view.addObject("reference", generateTransferId());
-				view.setViewName("transfer/confirm");
-			}
+			view.addObject("accountNumber", account.getAccountNumber());
+			view.addObject("destination", destination);
+			DecimalFormat formatter = new DecimalFormat("#,###.00");
+			view.addObject("amount", formatter.format(Double.valueOf(amount)));
+			view.addObject("reference", generateTransferId());
+			view.setViewName("transfer/confirm");
+		} catch (WrongInputException e) {
+			view = new ModelAndView("redirect:/transferAmount");
+			redirectAttributes.addFlashAttribute("message", e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 			SecurityContextHolder.getContext().setAuthentication(null);
@@ -139,53 +130,48 @@ public class TransferController {
 		try {
 			Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 			String message = "";
-			boolean stoper = false;
 			if (!destination.matches("[0-9]+")) {
 				message += env.getProperty("app.invalid.account");
-				stoper = true;
+				throw new WrongInputException(message);
 			}
 
-			List<Account> listAccount = accountService.findByAccountNumber(destination);
-			if (listAccount.size() <= 0) {
+			Account listAccount = accountService.findByAccountNumber(destination);
+			if (listAccount == null) {
 				message += env.getProperty("app.invalid.account");
-				stoper = true;
+				throw new WrongInputException(message);
 			}
 			amount = amount.replace(".00", "");
 			if (!amount.matches("[0-9]+")) {
 				message += env.getProperty("app.amount.number");
-				stoper = true;
+				throw new WrongInputException(message);
 			} else {
 				if (Long.valueOf(amount) < 1) {
 					message += env.getProperty("app.amount.mintransfer");
-					stoper = true;
+					throw new WrongInputException(message);
 				}
 				if (Long.valueOf(amount) > 1000) {
 					message += env.getProperty("app.amount.maxtransfer");
-					stoper = true;
+					throw new WrongInputException(message);
 				}
 				if (Long.valueOf(amount) > account.getBalance()) {
 					message += env.getProperty("app.amount.insufficient") + account.getBalance() + "<br>";
-					stoper = true;
+					throw new WrongInputException(message);
 				}
 			}
-
-			if (stoper) {
-				view = new ModelAndView("redirect:/transaction");
-				redirectAttributes.addFlashAttribute("message", message);
-				System.out.println(message);
-			} else {
-				account = transactionService.transfer(account.getAccountNumber(), Double.valueOf(amount), destination,
-						reference);
-				if (account == null)
-					throw new Exception();
-				SecurityContextHolder.getContext()
-						.setAuthentication(new UsernamePasswordAuthenticationToken(account, null, new ArrayList<>()));
-				redirectAttributes.addFlashAttribute("destination", destination);
-				redirectAttributes.addFlashAttribute("amount", amount);
-				redirectAttributes.addFlashAttribute("reference", reference);
-				redirectAttributes.addFlashAttribute("balance", account.getBalance());
-				view = new ModelAndView("redirect:/transferSummary");
-			}
+			account = transactionService.transfer(account.getAccountNumber(), Double.valueOf(amount), destination,
+					reference);
+			if (account == null)
+				throw new Exception();
+			SecurityContextHolder.getContext()
+					.setAuthentication(new UsernamePasswordAuthenticationToken(account, null, new ArrayList<>()));
+			redirectAttributes.addFlashAttribute("destination", destination);
+			redirectAttributes.addFlashAttribute("amount", amount);
+			redirectAttributes.addFlashAttribute("reference", reference);
+			redirectAttributes.addFlashAttribute("balance", account.getBalance());
+			view = new ModelAndView("redirect:/transferSummary");
+		} catch (WrongInputException e) {
+			view = new ModelAndView("redirect:/transaction");
+			redirectAttributes.addFlashAttribute("message", e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 			view = new ModelAndView("redirect:/");

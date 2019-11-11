@@ -1,11 +1,14 @@
 package com.yoga.atm.app.service.impl;
 
 import java.util.Date;
+import java.util.List;
 
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import com.yoga.atm.app.Exception.TransactionFailureException;
 import com.yoga.atm.app.dao.AccountRepository;
 import com.yoga.atm.app.dao.TransactionRepository;
 import com.yoga.atm.app.enumerable.TransactionType;
@@ -24,7 +27,7 @@ public class TransactionServiceImpl implements TransactionService {
 
 	@Override
 	@Transactional
-	public Account withdraw(String accountNumber, double amount) {
+	public Account withdraw(String accountNumber, double amount) throws TransactionFailureException {
 		Account account = null;
 		try {
 			account = accountRepository.findByAccountNumber(accountNumber).get(0);
@@ -36,14 +39,15 @@ public class TransactionServiceImpl implements TransactionService {
 		} catch (Exception e) {
 			e.printStackTrace();
 			account = null;
-			throw new RuntimeException(e.getMessage());
+			throw new TransactionFailureException(e.getMessage());
 		}
 		return account;
 	}
 
 	@Override
 	@Transactional
-	public Account transfer(String accountNumber, double amount, String destinationAccountNumber, String reference) {
+	public Account transfer(String accountNumber, double amount, String destinationAccountNumber, String reference)
+			throws TransactionFailureException {
 		Account account = null;
 		try {
 			account = accountRepository.findByAccountNumber(accountNumber).get(0);
@@ -58,9 +62,28 @@ public class TransactionServiceImpl implements TransactionService {
 		} catch (Exception e) {
 			e.printStackTrace();
 			account = null;
-			throw new RuntimeException(e.getMessage());
+			throw new TransactionFailureException(e.getMessage());
 		}
 		return account;
 	}
 
+	@Override
+	public Long countByAccountNumber(String accountNumber) {
+		return transactionRepository.countByAccountAccountNumber(accountNumber);
+	}
+
+	@Override
+	public List<Transaction> findAllByAccountNumber(String accountNumber, Pageable pageable) {
+		return transactionRepository.findAllByAccountAccountNumber(accountNumber, pageable);
+	}
+
+	@Override
+	public void deleteAll() {
+		transactionRepository.deleteAll();
+	}
+
+	@Override
+	public Transaction save(Transaction transaction) {
+		return transactionRepository.save(transaction);
+	}
 }

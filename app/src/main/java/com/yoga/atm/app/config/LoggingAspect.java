@@ -14,7 +14,8 @@ public class LoggingAspect {
 
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 
-	@AfterReturning(pointcut = "within(com.yoga.atm.app.service..*)", returning = "account")
+	@AfterReturning(pointcut = "execution(public * com.yoga.atm.app.service.impl.TransactionServiceImpl.transfer(String,..)) "
+			+ "|| execution(public * com.yoga.atm.app.service.impl.TransactionServiceImpl.withdraw(String,..))", returning = "account")
 	public void saveUserMethod(JoinPoint joinPoint, Object account) {
 		String message = "";
 		Object[] args = joinPoint.getArgs();
@@ -27,7 +28,8 @@ public class LoggingAspect {
 
 	}
 
-	@AfterThrowing(pointcut = "within(com.yoga.atm.app.service..*)", throwing = "exec")
+	@AfterThrowing(pointcut = "execution(public * com.yoga.atm.app.service.impl.TransactionServiceImpl.transfer(String,..))"
+			+ "|| execution(public * com.yoga.atm.app.service.impl.TransactionServiceImpl.withdraw(String,..))", throwing = "exec")
 	public void catchAllSQLSyntaxErrors(JoinPoint joinPoint, Throwable exec) {
 		String message = "";
 		message = exec.getMessage();

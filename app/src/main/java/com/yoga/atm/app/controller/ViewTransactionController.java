@@ -1,8 +1,10 @@
 package com.yoga.atm.app.controller;
 
-import java.text.DateFormat;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
+import java.time.Instant;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,10 +25,10 @@ import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.yoga.atm.app.dao.TransactionRepository;
 import com.yoga.atm.app.model.Account;
 import com.yoga.atm.app.model.Transaction;
 import com.yoga.atm.app.response.DatatableResponse;
+import com.yoga.atm.app.service.TransactionService;
 
 @Controller
 @PropertySource("classpath:message.properties")
@@ -37,7 +39,7 @@ public class ViewTransactionController {
 	private Environment env;
 
 	@Autowired
-	private TransactionRepository transactionService;
+	private TransactionService transactionService;
 
 	@RequestMapping(value = "/viewTransaction", method = RequestMethod.GET)
 	public ModelAndView inputAccountNumber(HttpServletRequest request, RedirectAttributes redirectAttributes) {
@@ -63,21 +65,21 @@ public class ViewTransactionController {
 		try {
 			Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 			response.setDraw(draw);
-			response.setRecordsFiltered(transactionService.countByAccountAccountNumber(account.getAccountNumber()));
-			response.setRecordsTotal(transactionService.countByAccountAccountNumber(account.getAccountNumber()));
+			Long countTransaction = transactionService.countByAccountNumber(account.getAccountNumber());
+			response.setRecordsFiltered(countTransaction);
+			response.setRecordsTotal(countTransaction);
 			Pageable paging = PageRequest.of(start / length, length, Sort.by("date").descending());
-//			List<Transaction> listTransaction = transactionService.findPagedTransaction(account.getAccountNumber(),
-//					start, length);
-			List<Transaction> listTransaction = transactionService
-					.findAllByAccountAccountNumber(account.getAccountNumber(), paging);
+			List<Transaction> listTransaction = transactionService.findAllByAccountNumber(account.getAccountNumber(),
+					paging);
 			List<List<String>> rows = new ArrayList<List<String>>();
 			List<String> row = null;
-			DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm a");
 			DecimalFormat formatter = new DecimalFormat("#,###.00");
 			for (Transaction transaction : listTransaction) {
 				row = new ArrayList<String>();
 				row.add(String.valueOf(transaction.getId()));
-				row.add(dateFormat.format(transaction.getDate()));
+				LocalDateTime date = Instant.ofEpochMilli(transaction.getDate().getTime())
+						.atZone(ZoneId.systemDefault()).toLocalDateTime();
+				row.add(date.format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a")));
 				row.add(transaction.getType().toString());
 				row.add(formatter.format(transaction.getAmount()));
 				if (transaction.getDestinationAccount() != null)
@@ -97,5 +99,4 @@ public class ViewTransactionController {
 		}
 		return response;
 	}
-
 }

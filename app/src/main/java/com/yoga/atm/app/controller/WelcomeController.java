@@ -26,8 +26,9 @@ import org.springframework.web.multipart.MultipartFile;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import com.yoga.atm.app.dao.AccountRepository;
+import com.yoga.atm.app.Exception.WrongInputException;
 import com.yoga.atm.app.model.Account;
+import com.yoga.atm.app.service.AccountService;
 
 @Controller
 @PropertySource("classpath:message.properties")
@@ -38,7 +39,7 @@ public class WelcomeController {
 	private Environment env;
 
 	@Autowired
-	private AccountRepository accountService;
+	private AccountService accountService;
 
 	@RequestMapping(value = { "/", "/login" }, method = RequestMethod.GET)
 	public ModelAndView inputAccountNumber(HttpServletRequest request, HttpSession session,
@@ -73,7 +74,6 @@ public class WelcomeController {
 			inputList.parallelStream().forEach(account -> {
 				accountService.save(account);
 			});
-
 			view = new ModelAndView("redirect:/");
 			redirectAttributes.addFlashAttribute("notif", env.getProperty("app.upload.success"));
 		} catch (Exception e) {
@@ -90,23 +90,20 @@ public class WelcomeController {
 		try {
 			if (!"anonymousUser".equals(SecurityContextHolder.getContext().getAuthentication().getPrincipal()))
 				return new ModelAndView("redirect:/transaction");
-			boolean stoper = false;
 			String message = "";
 			if (accountNumber.length() != 6) {
 				message += env.getProperty("app.accountnumber.size");
-				stoper = true;
+				throw new WrongInputException(message);
 			}
 			if (!accountNumber.matches("[0-9]+")) {
 				message += env.getProperty("app.accountnumber.number");
-				stoper = true;
+				throw new WrongInputException(message);
 			}
-			if (stoper) {
-				view = new ModelAndView("redirect:/");
-				redirectAttributes.addFlashAttribute("message", message);
-			} else {
-				view.addObject("accountNumber", accountNumber);
-				view.setViewName("welcome/inputPin");
-			}
+			view.addObject("accountNumber", accountNumber);
+			view.setViewName("welcome/inputPin");
+		} catch (WrongInputException e) {
+			view = new ModelAndView("redirect:/");
+			redirectAttributes.addFlashAttribute("message", e.getMessage());
 		} catch (Exception e) {
 			view = new ModelAndView("redirect:/");
 			redirectAttributes.addFlashAttribute("message", env.getProperty("app.unknown.error"));

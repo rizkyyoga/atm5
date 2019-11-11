@@ -1,10 +1,9 @@
 package com.yoga.atm.app.controller;
 
-import java.text.DateFormat;
 import java.text.DecimalFormat;
-import java.text.SimpleDateFormat;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Date;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -20,6 +19,7 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.servlet.ModelAndView;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
+import com.yoga.atm.app.Exception.WrongInputException;
 import com.yoga.atm.app.model.Account;
 import com.yoga.atm.app.service.TransactionService;
 
@@ -50,49 +50,46 @@ public class WithdrawController {
 		return view;
 	}
 
-	@RequestMapping(value = "/withdrawl", method = RequestMethod.GET)
+	@RequestMapping(value = "/withdrawl", method = RequestMethod.POST)
 	public ModelAndView withdrawl(HttpServletRequest request, RedirectAttributes redirectAttributes,
 			@RequestParam(value = "amount", required = true) String amount) {
 		ModelAndView view = new ModelAndView();
 		try {
 			Account account = (Account) SecurityContextHolder.getContext().getAuthentication().getPrincipal();
 			String message = "";
-			boolean goToSummary = true;
 			if (!amount.matches("[0-9]+")) {
-				goToSummary = false;
 				message += env.getProperty("app.amount.number");
+				throw new WrongInputException(message);
 			} else {
 				if (Double.valueOf(amount) % 10 != 0) {
-					goToSummary = false;
 					message += env.getProperty("app.invalid.amount");
+					throw new WrongInputException(message);
 				}
 				if (Double.valueOf(amount) > 1000) {
-					goToSummary = false;
 					message += env.getProperty("app.amount.maximum");
+					throw new WrongInputException(message);
 				}
 				if (Double.valueOf(amount) > account.getBalance()) {
-					goToSummary = false;
 					message += env.getProperty("app.amount.insufficient") + account.getBalance() + "<br>";
+					throw new WrongInputException(message);
 				}
 			}
 
-			if (goToSummary) {
-				account = transactionService.withdraw(account.getAccountNumber(), Double.valueOf(amount));
-				if (account == null)
-					throw new Exception();
-				SecurityContextHolder.getContext()
-						.setAuthentication(new UsernamePasswordAuthenticationToken(account, null, new ArrayList<>()));
-				view = new ModelAndView("redirect:/withdrawSummary");
-				DecimalFormat formatter = new DecimalFormat("#,###.00");
-				redirectAttributes.addFlashAttribute("balance", formatter.format(account.getBalance()));
-				redirectAttributes.addFlashAttribute("withdraw", formatter.format(Double.valueOf(amount)));
-				DateFormat dateFormat = new SimpleDateFormat("yyyy-MM-dd hh:mm a");
-				redirectAttributes.addFlashAttribute("date", dateFormat.format(new Date()));
-				redirectAttributes.addFlashAttribute("accountNumber", account.getAccountNumber());
-			} else {
-				view = new ModelAndView("redirect:/withdraw");
-				redirectAttributes.addFlashAttribute("message", message);
-			}
+			account = transactionService.withdraw(account.getAccountNumber(), Double.valueOf(amount));
+			if (account == null)
+				throw new Exception();
+			SecurityContextHolder.getContext()
+					.setAuthentication(new UsernamePasswordAuthenticationToken(account, null, new ArrayList<>()));
+			view = new ModelAndView("redirect:/withdrawSummary");
+			DecimalFormat formatter = new DecimalFormat("#,###.00");
+			redirectAttributes.addFlashAttribute("balance", formatter.format(account.getBalance()));
+			redirectAttributes.addFlashAttribute("withdraw", formatter.format(Double.valueOf(amount)));
+			redirectAttributes.addFlashAttribute("date",
+					LocalDateTime.now().format(DateTimeFormatter.ofPattern("yyyy-MM-dd hh:mm a")));
+			redirectAttributes.addFlashAttribute("accountNumber", account.getAccountNumber());
+		} catch (WrongInputException e) {
+			view = new ModelAndView("redirect:/withdraw");
+			redirectAttributes.addFlashAttribute("message", e.getMessage());
 		} catch (Exception e) {
 			e.printStackTrace();
 			SecurityContextHolder.getContext().setAuthentication(null);
@@ -101,5 +98,4 @@ public class WithdrawController {
 		}
 		return view;
 	}
-
 }
